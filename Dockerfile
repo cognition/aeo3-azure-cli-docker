@@ -28,9 +28,10 @@ RUN useradd -m -s /bin/bash aeo3user && \
 
 # Clone and install cognitify
 # Note: Running as root during build, so no sudo needed
+# Set USER environment variable for cognitify installer
 RUN git clone https://github.com/cognition/cognitify.git /tmp/cognitify && \
     cd /tmp/cognitify && \
-    bin/install.sh --user aeo3user --skip-packages && \
+    USER=root bin/install.sh --user aeo3user --skip-packages && \
     rm -rf /tmp/cognitify
 
 # Switch to non-root user
