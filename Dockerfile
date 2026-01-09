@@ -29,12 +29,13 @@ RUN useradd -m -s /bin/bash aeo3user && \
     echo "aeo3user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # Clone and install cognitify using configure script with --docker flag
+# Install components individually to skip post-install package installation
 RUN git clone https://github.com/cognition/cognitify.git /tmp/cognitify && \
     cd /tmp/cognitify && \
     chmod +x configure && \
     ./configure --user=aeo3user --docker --skip-packages && \
     make && \
-    make install && \
+    make install-config install-completions install-home install-bin install-distro install-docs install-man install-profile-d install-skel && \
     rm -rf /tmp/cognitify
 
 # Switch to non-root user
