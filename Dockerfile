@@ -14,6 +14,8 @@ RUN apt-get update && \
     git \
     vim \
     sudo \
+    make \
+    bash \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Azure CLI
@@ -26,12 +28,13 @@ RUN az extension add --name azure-devops
 RUN useradd -m -s /bin/bash aeo3user && \
     echo "aeo3user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# Clone and install cognitify
-# Note: Running as root during build, so no sudo needed
-# Set USER environment variable for cognitify installer
+# Clone and install cognitify using configure script with --docker flag
 RUN git clone https://github.com/cognition/cognitify.git /tmp/cognitify && \
     cd /tmp/cognitify && \
-    USER=root bin/install.sh --user aeo3user --skip-packages && \
+    chmod +x configure && \
+    ./configure --user=aeo3user --docker --skip-packages && \
+    make && \
+    make install && \
     rm -rf /tmp/cognitify
 
 # Switch to non-root user
