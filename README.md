@@ -94,16 +94,46 @@ docker run -it \
 
 ## Convenience Script
 
-An interactive shell script is provided to easily connect to or launch containers. Install it to your PATH:
+An interactive shell script is provided to easily connect to or launch containers. **Install it to your PATH for easy access:**
+
+### Installation
+
+**Option 1: Copy to ~/bin (recommended for user-specific installation)**
 
 ```bash
-# Copy to a directory in your PATH (e.g., ~/bin or /usr/local/bin)
+# Create ~/bin directory if it doesn't exist
+mkdir -p ~/bin
+
+# Copy the script
 cp azure-cli-docker.sh ~/bin/azure-cli-docker
 chmod +x ~/bin/azure-cli-docker
 
-# Or create a symlink
-ln -s "$(pwd)/azure-cli-docker.sh" ~/bin/azure-cli-docker
+# Ensure ~/bin is in your PATH (add to ~/.bashrc or ~/.profile if needed)
+export PATH="$HOME/bin:$PATH"
 ```
+
+**Option 2: Create a symlink**
+
+```bash
+# Create ~/bin directory if it doesn't exist
+mkdir -p ~/bin
+
+# Create symlink
+ln -s "$(pwd)/azure-cli-docker.sh" ~/bin/azure-cli-docker
+
+# Ensure ~/bin is in your PATH
+export PATH="$HOME/bin:$PATH"
+```
+
+**Option 3: System-wide installation (requires sudo)**
+
+```bash
+# Copy to /usr/local/bin for system-wide access
+sudo cp azure-cli-docker.sh /usr/local/bin/azure-cli-docker
+sudo chmod +x /usr/local/bin/azure-cli-docker
+```
+
+**Note:** After installation, you may need to restart your terminal or run `source ~/.bashrc` for the PATH changes to take effect.
 
 ### Usage
 
