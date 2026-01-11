@@ -42,6 +42,19 @@ RUN git clone https://github.com/cognition/cognitify.git /tmp/cognitify && \
 # Remove .orig backup files created by cognitify (not needed in fresh container)
 RUN find /home/aeo3user -maxdepth 1 -name "*.orig" -type f -delete
 
+# Add permission fix to bashrc (runs on shell startup)
+RUN echo '' >> /home/aeo3user/.bashrc && \
+    echo '# Fix permissions on mounted volumes' >> /home/aeo3user/.bashrc && \
+    echo 'if [ -d /home/aeo3user/.azure ] && [ "$(stat -c %U /home/aeo3user/.azure 2>/dev/null)" != "aeo3user" ]; then' >> /home/aeo3user/.bashrc && \
+    echo '    sudo chown -R aeo3user:aeo3user /home/aeo3user/.azure 2>/dev/null || true' >> /home/aeo3user/.bashrc && \
+    echo '    sudo chmod -R 755 /home/aeo3user/.azure 2>/dev/null || true' >> /home/aeo3user/.bashrc && \
+    echo 'fi' >> /home/aeo3user/.bashrc && \
+    echo 'if [ -d /home/aeo3user/.ssh ] && [ "$(stat -c %U /home/aeo3user/.ssh 2>/dev/null)" != "aeo3user" ]; then' >> /home/aeo3user/.bashrc && \
+    echo '    sudo chown -R aeo3user:aeo3user /home/aeo3user/.ssh 2>/dev/null || true' >> /home/aeo3user/.bashrc && \
+    echo '    sudo chmod -R 700 /home/aeo3user/.ssh 2>/dev/null || true' >> /home/aeo3user/.bashrc && \
+    echo 'fi' >> /home/aeo3user/.bashrc && \
+    chown aeo3user:aeo3user /home/aeo3user/.bashrc
+
 # Switch to non-root user
 USER aeo3user
 WORKDIR /home/aeo3user
@@ -49,6 +62,8 @@ WORKDIR /home/aeo3user
 # Set up environment
 ENV HOME=/home/aeo3user
 ENV USER=aeo3user
+# Disable Azure DevOps CLI keyring to avoid warnings in Docker containers
+ENV AZURE_DEVOPS_CLI_KEYRING=false
 
 # Default command
 CMD ["/bin/bash"]
