@@ -94,7 +94,7 @@ docker run -it \
 
 ## Convenience Script
 
-A shell script is provided to easily connect to a running container. Install it to your PATH:
+An interactive shell script is provided to easily connect to or launch containers. Install it to your PATH:
 
 ```bash
 # Copy to a directory in your PATH (e.g., ~/bin or /usr/local/bin)
@@ -105,7 +105,9 @@ chmod +x ~/bin/azure-cli-docker
 ln -s "$(pwd)/azure-cli-docker.sh" ~/bin/azure-cli-docker
 ```
 
-Then simply run:
+### Usage
+
+**If container exists:**
 
 ```bash
 # Connect to container named 'azure-cli' (default)
@@ -115,11 +117,66 @@ azure-cli-docker
 azure-cli-docker my-container-name
 ```
 
-The script will:
+The script will automatically start the container if it's stopped and connect you to an interactive bash session.
 
-- Check if the container exists
-- Start it if it's stopped
-- Execute an interactive bash session
+**If container doesn't exist:**
+The script will offer interactive options to launch a new container:
+
+1. **Interactive setup** - Prompts for:
+   - SSH keys mount (from `$HOME/.ssh`)
+   - Azure credentials (named volume, bind mount, or skip)
+   - Project directory mounts
+   - Custom additional mounts
+
+2. **Default launch** - Launches container with no mounts
+
+3. **Exit** - Cancel the operation
+
+### Interactive Setup Example
+
+When launching a new container, you'll be prompted:
+
+```text
+[WARNING] Container 'azure-cli' does not exist.
+
+[INFO] Available options:
+  1) Launch new container with interactive setup
+  2) Launch new container with default settings (no mounts)
+  3) Exit
+
+Choose option [1]: 1
+
+Mount SSH keys from $HOME/.ssh? [Y/n]: y
+[INFO] Will mount SSH keys
+
+[INFO] Azure credentials options:
+  1) Use named volume (persistent across containers)
+  2) Bind mount from $HOME/.azure
+  3) Skip (no Azure credentials mounted)
+Choose option [1]: 1
+[INFO] Will use Azure credentials volume
+
+Mount a project directory? [y/N]: y
+Enter project directory path: /home/user/myproject
+Enter mount name in container (e.g., 'project', 'work') [project]: work
+[INFO] Will mount /home/user/myproject to /home/aeo3user/work
+
+[INFO] Launch command:
+  docker run -it --name azure-cli --mount type=bind,source=/home/user/.ssh,target=/home/aeo3user/.ssh --mount source=azure-cli-volume,target=/home/aeo3user/.azure --mount type=bind,source=/home/user/myproject,target=/home/aeo3user/work aeo3-azure-cli
+
+Launch container with these settings? [Y/n]: y
+```
+
+### Script Features
+
+The script provides:
+
+- **Automatic container detection** - Checks if container exists
+- **Auto-start** - Starts stopped containers automatically
+- **Interactive setup** - Guided prompts for mount configuration
+- **Flexible mounts** - SSH keys, Azure credentials (volume or bind), project directories, custom mounts
+- **Colored output** - Easy-to-read status messages
+- **Error handling** - Validates paths and Docker availability
 
 ## Customization
 

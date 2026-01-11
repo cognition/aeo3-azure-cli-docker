@@ -16,6 +16,7 @@ RUN apt-get update && \
     sudo \
     make \
     bash \
+    bash-completion \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Azure CLI
