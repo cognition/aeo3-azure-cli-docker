@@ -39,6 +39,9 @@ RUN git clone https://github.com/cognition/cognitify.git /tmp/cognitify && \
     make install-config install-completions install-home install-bin install-distro install-docs install-man install-profile-d install-skel && \
     rm -rf /tmp/cognitify
 
+# Remove .orig backup files created by cognitify (not needed in fresh container)
+RUN find /home/aeo3user -maxdepth 1 -name "*.orig" -type f -delete
+
 # Switch to non-root user
 USER aeo3user
 WORKDIR /home/aeo3user
