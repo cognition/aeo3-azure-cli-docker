@@ -78,12 +78,13 @@ prompt_input() {
 # Build docker run command with mounts
 build_run_command() {
     local mounts=()
+    local env_vars=()
     local cmd="docker run -it --name ${CONTAINER_NAME}"
     
     # SSH keys mount
     if prompt_yes_no "Mount SSH keys from \$HOME/.ssh?" "y"; then
         if [[ -d "$HOME/.ssh" ]]; then
-            mounts+=("--mount type=bind,source=$HOME/.ssh,target=/home/aeo3user/.ssh")
+            mounts+=("--mount type=bind,source=$HOME/.ssh,target=/home/ubuntu/.ssh")
             info "Will mount SSH keys"
         else
             warning "SSH directory not found at $HOME/.ssh"
@@ -105,12 +106,12 @@ build_run_command() {
                 info "Creating Azure credentials volume '${AZURE_VOLUME_NAME}'..."
                 docker volume create "${AZURE_VOLUME_NAME}" >/dev/null
             fi
-            mounts+=("--mount source=${AZURE_VOLUME_NAME},target=/home/aeo3user/.azure")
+            mounts+=("--mount source=${AZURE_VOLUME_NAME},target=/home/ubuntu/.azure")
             info "Will use Azure credentials volume"
             ;;
         2)
             if [[ -d "$HOME/.azure" ]]; then
-                mounts+=("--mount type=bind,source=$HOME/.azure,target=/home/aeo3user/.azure")
+                mounts+=("--mount type=bind,source=$HOME/.azure,target=/home/ubuntu/.azure")
                 info "Will bind mount Azure credentials"
             else
                 warning "Azure directory not found at $HOME/.azure"
@@ -120,6 +121,20 @@ build_run_command() {
             info "Skipping Azure credentials mount"
             ;;
     esac
+    
+    # Azure DevOps organization
+    echo ""
+    if prompt_yes_no "Set Azure DevOps organization URL?" "n"; then
+        local org_url=$(prompt_input "Enter organization URL (e.g., https://dev.azure.com/myorg or myorg)" "")
+        if [[ -n "$org_url" ]]; then
+            # If URL doesn't start with http, assume it's just the org name
+            if [[ ! "$org_url" =~ ^https?:// ]]; then
+                org_url="https://dev.azure.com/${org_url}"
+            fi
+            env_vars+=("-e" "AZURE_DEVOPS_ORG_URL=${org_url}")
+            info "Will set AZURE_DEVOPS_ORG_URL=${org_url}"
+        fi
+    fi
     
     # Project directories
     echo ""
@@ -158,8 +173,8 @@ build_run_command() {
         
         if [[ "$project_valid" == true ]] && [[ -n "$project_path" ]]; then
             local mount_name=$(prompt_input "Enter mount name in container (e.g., 'project', 'work')" "project")
-            mounts+=("--mount type=bind,source=${project_path},target=/home/aeo3user/${mount_name}")
-            info "Will mount ${project_path} to /home/aeo3user/${mount_name}"
+            mounts+=("--mount type=bind,source=${project_path},target=/home/ubuntu/${mount_name}")
+            info "Will mount ${project_path} to /home/ubuntu/${mount_name}"
         fi
     fi
     
@@ -219,6 +234,11 @@ build_run_command() {
     # Build final command
     for mount in "${mounts[@]}"; do
         cmd+=" ${mount}"
+    done
+    
+    # Add environment variables
+    for env_var in "${env_vars[@]}"; do
+        cmd+=" ${env_var}"
     done
     
     cmd+=" ${IMAGE_NAME}"

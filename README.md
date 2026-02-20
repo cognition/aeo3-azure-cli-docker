@@ -6,7 +6,7 @@ An Ubuntu-based Docker container with Azure CLI, DevOps extension, Git, Vim, and
 
 - **Azure CLI**: Latest version with DevOps extension
 - **Development Tools**: Git and Vim installed
-- **Non-root User**: Runs as `aeo3user` for security
+- **Non-root User**: Runs as `ubuntu` for security
 - **Cognitify**: Linux shell customisations and dotfiles from [cognitify](https://github.com/cognition/cognitify)
 
 ## Building
@@ -26,7 +26,7 @@ docker run -it aeo3-azure-cli
 To use Azure CLI with authentication, mount your Azure credentials:
 
 ```bash
-docker run -it -v ~/.azure:/home/aeo3user/.azure aeo3-azure-cli
+docker run -it -v ~/.azure:/home/ubuntu/.azure aeo3-azure-cli
 ```
 
 Or use environment variables for service principal authentication:
@@ -38,6 +38,26 @@ docker run -it \
   -e AZURE_TENANT_ID=your-tenant-id \
   aeo3-azure-cli
 ```
+
+### Setting Azure DevOps Organization
+
+You can set the Azure DevOps organization URL as an environment variable:
+
+```bash
+docker run -it \
+  -e AZURE_DEVOPS_ORG_URL=https://dev.azure.com/your-org \
+  aeo3-azure-cli
+```
+
+Or just provide the organization name (the script will automatically format it):
+
+```bash
+docker run -it \
+  -e AZURE_DEVOPS_ORG_URL=your-org \
+  aeo3-azure-cli
+```
+
+**Note:** When using the interactive launch script (`azure-cli-docker.sh`), you'll be prompted to set the organization URL during container setup.
 
 ## Advanced Usage with Volume Mounts
 
@@ -51,7 +71,7 @@ Create a named volume to persist Azure CLI credentials across container runs:
 docker volume create azure-cli-volume
 docker run -it \
   --name azure-cli \
-  --mount source=azure-cli-volume,target=/home/aeo3user/.azure \
+  --mount source=azure-cli-volume,target=/home/ubuntu/.azure \
   aeo3-azure-cli
 ```
 
@@ -62,7 +82,7 @@ Mount your SSH directory for Git operations:
 ```bash
 docker run -it \
   --name azure-cli \
-  --mount type=bind,source="$HOME"/.ssh,target=/home/aeo3user/.ssh \
+  --mount type=bind,source="$HOME"/.ssh,target=/home/ubuntu/.ssh \
   aeo3-azure-cli
 ```
 
@@ -73,7 +93,7 @@ Mount your project directories for development:
 ```bash
 docker run -it \
   --name azure-cli \
-  --mount type=bind,source=/path/to/your/project,target=/home/aeo3user/project \
+  --mount type=bind,source=/path/to/your/project,target=/home/ubuntu/project \
   aeo3-azure-cli
 ```
 
@@ -84,13 +104,13 @@ Example with SSH keys, Azure credentials volume, and project directory:
 ```bash
 docker run -it \
   --name azure-cli \
-  --mount type=bind,source="$HOME"/.ssh,target=/home/aeo3user/.ssh \
-  --mount type=bind,source=/path/to/your/project,target=/home/aeo3user/project \
-  --mount source=azure-cli-volume,target=/home/aeo3user/.azure \
+  --mount type=bind,source="$HOME"/.ssh,target=/home/ubuntu/.ssh \
+  --mount type=bind,source=/path/to/your/project,target=/home/ubuntu/project \
+  --mount source=azure-cli-volume,target=/home/ubuntu/.azure \
   aeo3-azure-cli
 ```
 
-**Note**: The container runs as `aeo3user` (non-root), so mount paths should target `/home/aeo3user/` instead of `/root/`.
+**Note**: The container runs as `ubuntu` (non-root), so mount paths should target `/home/ubuntu/` instead of `/root/`.
 
 ## Convenience Script
 
@@ -189,10 +209,10 @@ Choose option [1]: 1
 Mount a project directory? [y/N]: y
 Enter project directory path: /home/user/myproject
 Enter mount name in container (e.g., 'project', 'work') [project]: work
-[INFO] Will mount /home/user/myproject to /home/aeo3user/work
+[INFO] Will mount /home/user/myproject to /home/ubuntu/work
 
 [INFO] Launch command:
-  docker run -it --name azure-cli --mount type=bind,source=/home/user/.ssh,target=/home/aeo3user/.ssh --mount source=azure-cli-volume,target=/home/aeo3user/.azure --mount type=bind,source=/home/user/myproject,target=/home/aeo3user/work aeo3-azure-cli
+  docker run -it --name azure-cli --mount type=bind,source=/home/user/.ssh,target=/home/ubuntu/.ssh --mount source=azure-cli-volume,target=/home/ubuntu/.azure --mount type=bind,source=/home/user/myproject,target=/home/ubuntu/work aeo3-azure-cli
 
 Launch container with these settings? [Y/n]: y
 ```
@@ -212,7 +232,7 @@ The script provides:
 
 The container uses cognitify for shell customisations. The cognitify installation runs during build with:
 
-- User: `aeo3user`
+- User: `ubuntu`
 - Packages: Skipped (to keep image size small)
 
 To customize further, you can modify the Dockerfile or mount custom configurations at runtime.
